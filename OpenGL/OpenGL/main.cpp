@@ -13,6 +13,7 @@
 
 // Window dimensions
 const GLint WIDTH = 800, HEIGHT = 600;
+const float TO_RADIANS = 3.14159265f / 180.0f;
 
 //VAO VBOS
 GLuint VAO, VBO, shader, uniformModel;
@@ -21,6 +22,8 @@ bool bDirection = true;
 float triangleOffset = 0.0f;
 float triangleMaxOffset = 0.7f;
 float triangleIncrement = 0.005f;
+
+float curAngle = 0.0f;
 
 // Vertex Shader
 static const char* pVShader = "                                     \n\
@@ -205,6 +208,12 @@ int main()
             bDirection = !bDirection;
         }
 
+        curAngle += 1.0f;
+        if (curAngle >= 360)
+        {
+            curAngle -= 360;
+        }
+
         // Clear window
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Red
         glClear(GL_COLOR_BUFFER_BIT);
@@ -212,7 +221,8 @@ int main()
         glUseProgram(shader); // Use shader program
 
         glm::mat4 model = glm::mat4(1.0f); // Create identity matrix its all values are 0 except the diagonals
-        model = glm::translate(model, glm::vec3(triangleOffset, triangleOffset, 0.0f)); // Translate matrix
+        model = glm::translate(model, glm::vec3(triangleOffset, 0.0, 0.0f)); // Translate matrix
+        model = glm::rotate(model, curAngle * TO_RADIANS, glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate matrix
         
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); // Set uniform variable
 
