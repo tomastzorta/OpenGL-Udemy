@@ -35,23 +35,26 @@ static const char* pVShader = "                                     \n\
 #version 330                                                        \n\
                                                                     \n\
 layout (location = 0) in vec3 pos;                                  \n\
+out vec4 vertexColour;                                              \n\
                                                                     \n\
-uniform mat4 model;                                                \n\
+uniform mat4 model;                                                 \n\
                                                                     \n\
 void main()                                                         \n\
 {                                                                   \n\
-    gl_Position = model * vec4(pos, 1.0);       \n\
+    gl_Position = model * vec4(pos, 1.0);                           \n\
+    vertexColour = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);              \n\
 }";
 
 // Fragment Shader
 static const char* pFShader = "                                     \n\
 #version 330                                                        \n\
                                                                     \n\
-out vec4 colour;                                 \n\
+in vec4 vertexColour;                                               \n\
+out vec4 colour;                                                    \n\
                                                                     \n\
 void main()                                                         \n\
 {                                                                   \n\
-    colour = vec4(1.0, 0.0, 0.0, 1.0);       \n\
+    colour = vertexColour;                              \n\
 }";
 
 void CreateTriangle()
@@ -240,9 +243,9 @@ int main()
         glUseProgram(shader); // Use shader program
 
         glm::mat4 model = glm::mat4(1.0f); // Create identity matrix its all values are 0 except the diagonals
-        model = glm::translate(model, glm::vec3(triangleOffset, 0.0, 0.0f)); // Translate matrix
+        //model = glm::translate(model, glm::vec3(triangleOffset, 0.0, 0.0f)); // Translate matrix
         //model = glm::rotate(model, curAngle * TO_RADIANS, glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate matrix
-        model = glm::scale(model, glm::vec3(curSize, 0.4, 1.0f)); // Scale matrix
+        model = glm::scale(model, glm::vec3(0.4, 0.4, 1.0f)); // Scale matrix
         
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); // Set uniform variable
 
