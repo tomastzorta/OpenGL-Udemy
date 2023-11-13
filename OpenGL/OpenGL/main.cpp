@@ -16,7 +16,7 @@ const GLint WIDTH = 800, HEIGHT = 600;
 const float TO_RADIANS = 3.14159265f / 180.0f;
 
 //VAO VBOS
-GLuint VAO, VBO, EBO, shader, uniformModel;
+GLuint VAO, VBO, EBO, shader, uniformModel, uniformProjection;
 
 bool bDirection = true;
 float triangleOffset = 0.0f;
@@ -38,10 +38,11 @@ layout (location = 0) in vec3 pos;                                  \n\
 out vec4 vertexColour;                                              \n\
                                                                     \n\
 uniform mat4 model;                                                 \n\
+uniform mat4 projection;                                            \n\
                                                                     \n\
 void main()                                                         \n\
 {                                                                   \n\
-    gl_Position = model * vec4(pos, 1.0);                           \n\
+    gl_Position = projection * model * vec4(pos, 1.0);              \n\
     vertexColour = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);              \n\
 }";
 
@@ -155,6 +156,7 @@ void AssembleShaders()
     }
 
     uniformModel = glGetUniformLocation(shader, "model");
+    uniformProjection = glGetUniformLocation(shader, "projection");
 }
 
 int main()
@@ -211,7 +213,8 @@ int main()
 
     CreateTriangle();
     AssembleShaders();
-    
+
+    glm::mat4 projection = glm::perspective(45.0f, (GLfloat)bufferWidth / (GLfloat)bufferHeight, 0.1f, 100.0f); // Create projection matrix
 
     // Loop until window closed
     while (!glfwWindowShouldClose(pMainWindow))
@@ -260,12 +263,13 @@ int main()
         glUseProgram(shader); // Use shader program
 
         glm::mat4 model = glm::mat4(1.0f); // Create identity matrix its all values are 0 except the diagonals
-        //model = glm::translate(model, glm::vec3(triangleOffset, 0.0, 0.0f)); // Translate matrix
+        model = glm::translate(model, glm::vec3(0.0f, 0.0, -2.5f)); // Translate matrix
         model = glm::rotate(model, curAngle * TO_RADIANS, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate matrix
         model = glm::scale(model, glm::vec3(0.4, 0.4, 1.0f)); // Scale matrix
         
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); // Set uniform variable
-
+        glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection)); // Set uniform variable
+        
         glBindVertexArray(VAO); // Bind VAO
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // Bind EBO
         glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0); // Draw triangle
