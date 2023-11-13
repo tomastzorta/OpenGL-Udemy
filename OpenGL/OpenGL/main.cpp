@@ -16,7 +16,7 @@ const GLint WIDTH = 800, HEIGHT = 600;
 const float TO_RADIANS = 3.14159265f / 180.0f;
 
 //VAO VBOS
-GLuint VAO, VBO, shader, uniformModel;
+GLuint VAO, VBO, EBO, shader, uniformModel;
 
 bool bDirection = true;
 float triangleOffset = 0.0f;
@@ -59,15 +59,28 @@ void main()                                                         \n\
 
 void CreateTriangle()
 {
+    unsigned int indices[] =
+    {
+        0, 3 ,1, 
+        1, 3, 2, 
+        2, 3, 0, 
+        0, 1, 2
+    };
+    
     GLfloat vertices[] =
     {
         -1.0f, -1.0f, 0.0f, // Bottom left corner
+        0.0f, -1.0f, 1.0f, 
         1.0f, -1.0f, 0.0f,  // Bottom right corner
         0.0f, 1.0f, 0.0f    // Top corner
     };
 
     glGenVertexArrays(1, &VAO); // Generate VAO
     glBindVertexArray(VAO);     // Bind VAO
+
+    glGenBuffers(1, &EBO); // Generate IBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // Bind EBO
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // Copy indices to EBO
 
     glGenBuffers(1, &VBO); // Generate VBO
     glBindBuffer(GL_ARRAY_BUFFER, VBO); // Bind VBO
@@ -76,8 +89,9 @@ void CreateTriangle()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // Specify layout of VBO
     glEnableVertexAttribArray(0); // Enable vertex attribute array 0
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind VBO
     glBindVertexArray(0); // Unbind VAO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind EBO
+    glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind VBO
 }
 
 void AddShader(GLuint t_program, const char* t_shaderCode, GLenum t_shaderType)
@@ -189,6 +203,9 @@ int main()
         return 1;
     }
 
+    // enable depth buffer
+    glEnable(GL_DEPTH_TEST);
+    
     //setup viewport size
     glViewport(0, 0, bufferWidth, bufferHeight);
 
@@ -238,20 +255,22 @@ int main()
 
         // Clear window
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Red
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shader); // Use shader program
 
         glm::mat4 model = glm::mat4(1.0f); // Create identity matrix its all values are 0 except the diagonals
         //model = glm::translate(model, glm::vec3(triangleOffset, 0.0, 0.0f)); // Translate matrix
-        //model = glm::rotate(model, curAngle * TO_RADIANS, glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate matrix
+        model = glm::rotate(model, curAngle * TO_RADIANS, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate matrix
         model = glm::scale(model, glm::vec3(0.4, 0.4, 1.0f)); // Scale matrix
         
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); // Set uniform variable
 
         glBindVertexArray(VAO); // Bind VAO
-        glDrawArrays(GL_TRIANGLES, 0, 3); // Draw triangle
-        
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // Bind EBO
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0); // Draw triangle
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind EBO
         glBindVertexArray(0); // Unbind VAO
         glUseProgram(0); // Unuse shader program
         
