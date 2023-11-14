@@ -1,19 +1,20 @@
 ﻿#pragma once
 
-#include <GL/glew.h>
+#include <GL\glew.h>
 
 class Mesh
 {
 public:
     Mesh();
 
-    void CreateMesh(GLfloat *a_tPVertices, unsigned int *a_tPIndices, unsigned int a_tNumberOfVertices, unsigned int a_tNumberOfIndices); // Create a triangle
-    void RenderMesh(); // Draw the triangle
-    void ClearMesh(); // Delete the triangle
-    
+    void CreateMesh(GLfloat* a_pVertices, unsigned int* a_pIndices, unsigned int a_numOfVertices, unsigned int a_numOfIndices);
+    void RenderMesh();
+    void ClearMesh();
+
     ~Mesh();
 
 private:
-    GLuint m_vao, m_vbo, m_ebo;
+    GLuint m_vao, m_vbo, m_ibo;
     GLsizei m_indexCount;
 };
+

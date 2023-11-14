@@ -26,7 +26,7 @@ public:
     ~Shader();
 
 private:
-    GLuint shaderID, uniformProjection, uniformModel;
+    GLuint m_shaderID, m_uniformProjection, m_uniformModel;
 
     void M_CompileShader(const char* a_vertexCode, const char* a_fragmentCode);
     void M_AddShader(GLuint a_program, const char* a_shaderCode, GLenum a_shaderType);

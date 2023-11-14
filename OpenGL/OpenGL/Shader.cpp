@@ -2,14 +2,14 @@
 
 Shader::Shader()
 {
-	shaderID = 0;
-	uniformModel = 0;
-	uniformProjection = 0;
+	m_shaderID = 0;
+	m_uniformModel = 0;
+	m_uniformProjection = 0;
 }
 
-void Shader::CreateFromString(const char* a_vertexCode, const char* fragmentCode)
+void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
 {
-	M_CompileShader(a_vertexCode, fragmentCode);
+	M_CompileShader(vertexCode, fragmentCode);
 }
 
 void Shader::CreateFromFiles(const char* a_vertexLocation, const char* a_fragmentLocation)
@@ -45,72 +45,72 @@ std::string Shader::ReadFile(const char* a_fileLocation)
 
 void Shader::M_CompileShader(const char* a_vertexCode, const char* a_fragmentCode)
 {
-	shaderID = glCreateProgram();
+	m_shaderID = glCreateProgram();
 
-	if (!shaderID)
+	if (!m_shaderID)
 	{
 		printf("Error creating shader program!\n");
 		return;
 	}
 
-	M_AddShader(shaderID, a_vertexCode, GL_VERTEX_SHADER);
-	M_AddShader(shaderID, a_fragmentCode, GL_FRAGMENT_SHADER);
+	M_AddShader(m_shaderID, a_vertexCode, GL_VERTEX_SHADER);
+	M_AddShader(m_shaderID, a_fragmentCode, GL_FRAGMENT_SHADER);
 
 	GLint result = 0;
 	GLchar eLog[1024] = { 0 };
 
-	glLinkProgram(shaderID);
-	glGetProgramiv(shaderID, GL_LINK_STATUS, &result);
+	glLinkProgram(m_shaderID);
+	glGetProgramiv(m_shaderID, GL_LINK_STATUS, &result);
 	if (!result)
 	{
-		glGetProgramInfoLog(shaderID, sizeof(eLog), NULL, eLog);
+		glGetProgramInfoLog(m_shaderID, sizeof(eLog), NULL, eLog);
 		printf("Error linking program: '%s'\n", eLog);
 		return;
 	}
 
-	glValidateProgram(shaderID);
-	glGetProgramiv(shaderID, GL_VALIDATE_STATUS, &result);
+	glValidateProgram(m_shaderID);
+	glGetProgramiv(m_shaderID, GL_VALIDATE_STATUS, &result);
 	if (!result)
 	{
-		glGetProgramInfoLog(shaderID, sizeof(eLog), NULL, eLog);
+		glGetProgramInfoLog(m_shaderID, sizeof(eLog), NULL, eLog);
 		printf("Error validating program: '%s'\n", eLog);
 		return;
 	}
 
-	uniformProjection = glGetUniformLocation(shaderID, "projection");
-	uniformModel = glGetUniformLocation(shaderID, "model");
+	m_uniformProjection = glGetUniformLocation(m_shaderID, "projection");
+	m_uniformModel = glGetUniformLocation(m_shaderID, "model");
 }
 
 GLuint Shader::GetProjectionLocation()
 {
-	return uniformProjection;
+	return m_uniformProjection;
 }
 GLuint Shader::GetModelLocation()
 {
-	return uniformModel;
+	return m_uniformModel;
 }
 
 void Shader::UseShader()
 {
-	glUseProgram(shaderID);
+	glUseProgram(m_shaderID);
 }
 
 void Shader::ClearShader()
 {
-	if (shaderID != 0)
+	if (m_shaderID != 0)
 	{
-		glDeleteProgram(shaderID);
-		shaderID = 0;
+		glDeleteProgram(m_shaderID);
+		m_shaderID = 0;
 	}
 
-	uniformModel = 0;
-	uniformProjection = 0;
+	m_uniformModel = 0;
+	m_uniformProjection = 0;
 }
 
 
-void Shader::M_AddShader(GLuint a_program, const char* a_shaderCode, const GLenum shaderType)
+void Shader::M_AddShader(GLuint a_theProgram, const char* a_shaderCode, const GLenum a_shaderType)
 {
-	GLuint shaderProgram = glCreateShader(shaderType);
+	GLuint Shader = glCreateShader(a_shaderType);
 
 	const GLchar* theCode[1];
 	theCode[0] = a_shaderCode;
@@ -118,21 +118,21 @@ void Shader::M_AddShader(GLuint a_program, const char* a_shaderCode, const GLenu
 	GLint codeLength[1];
 	codeLength[0] = strlen(a_shaderCode);
 
-	glShaderSource(shaderProgram, 1, theCode, codeLength);
-	glCompileShader(shaderProgram);
+	glShaderSource(Shader, 1, theCode, codeLength);
+	glCompileShader(Shader);
 
 	GLint result = 0;
 	GLchar eLog[1024] = { 0 };
 
-	glGetShaderiv(shaderProgram, GL_COMPILE_STATUS, &result);
+	glGetShaderiv(Shader, GL_COMPILE_STATUS, &result);
 	if (!result)
 	{
-		glGetShaderInfoLog(shaderProgram, sizeof(eLog), NULL, eLog);
-		printf("Error compiling the %d shader: '%s'\n", shaderType, eLog);
+		glGetShaderInfoLog(Shader, sizeof(eLog), NULL, eLog);
+		printf("Error compiling the %d shader: '%s'\n", a_shaderType, eLog);
 		return;
 	}
 
-	glAttachShader(a_program, shaderProgram);
+	glAttachShader(a_theProgram, Shader);
 }
 
 Shader::~Shader()
